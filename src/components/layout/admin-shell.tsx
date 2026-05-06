@@ -113,7 +113,7 @@ export function AdminShell({
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] flex font-sans">
+    <div className="min-h-screen bg-[#F3F4F6] flex font-sans overflow-x-hidden">
 
       {/* DESKTOP SIDEBAR */}
       <aside className="w-[280px] bg-white border-r border-gray-200/60 hidden lg:flex flex-col h-screen sticky top-0 p-6">
@@ -196,10 +196,10 @@ export function AdminShell({
         </header>
 
         {/* DASHBOARD PAGE WRAPPER */}
-        <main className="p-4 sm:p-8 overflow-y-auto">
+        <main className="p-4 sm:p-8 overflow-y-auto overflow-x-clip">
           <div className="max-w-[1400px] mx-auto">
             <div className="mb-10">
-              <h1 className="text-3xl font-black tracking-tight text-gray-900 mb-2">{title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-900 mb-2">{title}</h1>
               <p className="text-gray-500 font-medium text-sm">{subtitle}</p>
             </div>
 

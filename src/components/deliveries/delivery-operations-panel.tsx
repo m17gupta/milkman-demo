@@ -184,19 +184,23 @@ export function DeliveryOperationsPanel({
     currentStatus: string
   ) {
     const isTogglingOff = type === "RESET" || currentStatus === type;
-    const finalType = type === "EXTRA" ? "DELIVERED" : type;
+    const apiStatus = type === "EXTRA" ? "DELIVERED" : (type === "RESET" ? null : type) as "DELIVERED" | "SKIPPED" | "PAUSED" | null;
     setLoadingKey(`${customerCode}:${type}`);
 
     // Optimistic update
     setLocalEntries((prev) =>
       prev.map((entry) => {
         if (entry.customerCode !== customerCode) return entry;
+<<<<<<< Updated upstream
 
         if (type === "RESET") {
           return { ...entry, status: "PENDING" as const, actualQuantity: entry.defaultQuantity, extraQuantity: 0 };
+=======
+        if (isTogglingOff) {
+          return { ...entry, status: "PENDING" as const, extraQuantity: 0 };
+>>>>>>> Stashed changes
         }
-
-        const statusToSet = isTogglingOff ? "PENDING" : (type === "EXTRA" ? "DELIVERED" : type);
+        const statusToSet = type === "EXTRA" ? "DELIVERED" : type;
         return { ...entry, status: statusToSet as any };
       })
     );
@@ -206,13 +210,20 @@ export function DeliveryOperationsPanel({
         await fetch(`/api/deliveries?customerCode=${customerCode}&date=${filters.date}`, {
           method: "DELETE",
         });
-      } else {
+      } else if (apiStatus) {
         const currentEntry = localEntries.find(e => e.customerCode === customerCode);
-        const body: any = {
+        const body = {
           customerCode,
+<<<<<<< Updated upstream
           status: finalType,
           date: filters.date,
           actualQuantity: currentEntry?.actualQuantity ?? currentEntry?.defaultQuantity ?? 0,
+=======
+          status: apiStatus,
+          date: filters.date,
+          extraQuantity: currentEntry?.extraQuantity || 0,
+          ...(apiStatus === "DELIVERED" ? { actualQuantity: (currentEntry?.baseQuantity || 0) + (currentEntry?.extraQuantity || 0) } : {}),
+>>>>>>> Stashed changes
         };
 
         await fetch("/api/deliveries", {
@@ -235,9 +246,7 @@ export function DeliveryOperationsPanel({
     if (pending.length === 0) return;
 
     setLoadingKey("all:DELIVERED");
-
-    // Optimistic update
-    setLocalEntries(prev => prev.map(e => e.status === "PENDING" ? { ...e, status: "DELIVERED" } : e));
+    setLocalEntries(prev => prev.map(e => e.status === "PENDING" ? { ...e, status: "DELIVERED" as const } : e));
 
     try {
       await Promise.all(pending.map(e =>
@@ -248,7 +257,12 @@ export function DeliveryOperationsPanel({
             customerCode: e.customerCode,
             status: "DELIVERED",
             date: filters.date,
+<<<<<<< Updated upstream
             actualQuantity: e.actualQuantity || e.defaultQuantity || 0
+=======
+            actualQuantity: (e.baseQuantity || 0) + (e.extraQuantity || 0),
+            extraQuantity: e.extraQuantity || 0,
+>>>>>>> Stashed changes
           }),
         })
       ));
@@ -288,16 +302,16 @@ export function DeliveryOperationsPanel({
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
       {/* Premium Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 relative overflow-hidden">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between bg-white rounded-[24px] p-4 shadow-sm border border-gray-100 relative overflow-hidden">
         {/* Subtle decorative background */}
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#22c55e]/10 rounded-full blur-2xl" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#dcfce7] flex items-center justify-center">
-              <Filter className="h-5 w-5 text-[#064e3b]" />
+            <div className="w-8 h-8 rounded-full bg-[#dcfce7] flex items-center justify-center">
+              <Filter className="h-4 w-4 text-[#064e3b]" />
             </div>
-            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Delivery Run</h2>
+            <h2 className="text-lg font-black text-gray-900 tracking-tight">Delivery Run</h2>
           </div>
           <p className="mt-2 text-sm text-gray-500 font-medium ml-13 flex items-center gap-2">
             <span className="px-2.5 py-1 bg-gray-100 rounded-lg text-xs font-bold text-gray-700">{selectedAreaName}</span>
@@ -311,7 +325,7 @@ export function DeliveryOperationsPanel({
               type="button"
               onClick={markAllUndelivered}
               disabled={loadingKey !== null}
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
             >
               {loadingKey === "all:UNDELIVERED" ? "Processing..." : "Mark All Undelivered"}
             </button>
@@ -320,7 +334,7 @@ export function DeliveryOperationsPanel({
               type="button"
               onClick={markAllDelivered}
               disabled={counts.pending === 0 || loadingKey !== null}
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
             >
               {loadingKey === "all:DELIVERED" ? "Processing..." : "Mark All Delivered"}
             </button>
@@ -329,7 +343,7 @@ export function DeliveryOperationsPanel({
             type="button"
             onClick={openLocationSelector}
             style={{ background: 'linear-gradient(to right, #064e3b, #166534)' }}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-white text-sm font-black shadow-[0_8px_20px_rgba(6,78,59,0.3)] hover:shadow-[0_10px_25px_rgba(6,78,59,0.4)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-black shadow-[0_4px_12px_rgba(6,78,59,0.3)] hover:shadow-[0_6px_16px_rgba(6,78,59,0.4)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
           >
             <Play className="h-4 w-4 fill-white" />
             {filters.area ? "Change Route" : "Start Route"}
@@ -338,7 +352,7 @@ export function DeliveryOperationsPanel({
       </div>
 
       {/* Sleek Glassmorphic Filter Bar */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-3 bg-white/60 backdrop-blur-xl p-4 rounded-[24px] border border-white/40 shadow-sm">
+      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 bg-white/60 backdrop-blur-xl p-3 rounded-[20px] border border-white/40 shadow-sm">
         <div className="space-y-1.5">
           <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 pl-1">Date</label>
           <div className="relative">
@@ -347,7 +361,7 @@ export function DeliveryOperationsPanel({
               type="date"
               value={filters.date}
               onChange={(event) => updateFilters({ date: event.target.value })}
-              className="w-full pl-11 h-12 rounded-xl border-none bg-white shadow-sm text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#10b981]/20 transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+              className="w-full pl-10 h-9 rounded-lg border-none bg-white shadow-sm text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#10b981]/20 transition-all [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             />
           </div>
         </div>
@@ -356,7 +370,7 @@ export function DeliveryOperationsPanel({
           <select
             value={filters.status}
             onChange={(event) => updateFilters({ status: event.target.value as DeliveryStatus })}
-            className="w-full px-4 h-12 rounded-xl border-none bg-white shadow-sm text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 transition-all appearance-none"
+            className="w-full px-3 h-9 rounded-lg border-none bg-white shadow-sm text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 transition-all appearance-none"
           >
             {statusOptions.map((status) => (
               <option key={status.value} value={status.value}>
@@ -370,7 +384,7 @@ export function DeliveryOperationsPanel({
           <select
             value={filters.area}
             onChange={(event) => updateFilters({ area: event.target.value })}
-            className="w-full px-4 h-12 rounded-xl border-none bg-white shadow-sm text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 transition-all appearance-none"
+            className="w-full px-3 h-9 rounded-lg border-none bg-white shadow-sm text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-500/20 transition-all appearance-none"
           >
             <option value="">All locations</option>
             {areas.map((area) => (
@@ -385,56 +399,88 @@ export function DeliveryOperationsPanel({
       {/* Premium Dashboard Style Metrics */}
       <div className="flex sm:grid sm:grid-cols-4 gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* Delivered Card */}
+<<<<<<< Updated upstream
         <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#ecfdf5] to-white border border-[#d1fae5] rounded-[20px] p-3 shadow-sm relative overflow-hidden group">
+=======
+        <div className="min-w-[130px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#ecfdf5] to-white border border-[#d1fae5] rounded-[16px] p-3 shadow-sm relative overflow-hidden group">
+>>>>>>> Stashed changes
           <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#d1fae5]/50 rounded-full blur-xl group-hover:bg-[#a7f3d0]/50 transition-all" />
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-[#059669] mb-1">Delivered</p>
               <p className="text-xl font-black tracking-tighter text-[#064e3b]">{counts.delivered}</p>
             </div>
+<<<<<<< Updated upstream
             <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#10b981] shadow-[0_2px_8px_rgba(16,185,129,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+=======
+            <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#10b981] shadow-[0_2px_8px_rgba(16,185,129,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+>>>>>>> Stashed changes
               <Check className="h-4 w-4 stroke-[3]" />
             </div>
           </div>
         </div>
 
         {/* Skipped Card */}
+<<<<<<< Updated upstream
         <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#fff1f2] to-white border border-[#ffe4e6] rounded-[20px] p-3 shadow-sm relative overflow-hidden group">
+=======
+        <div className="min-w-[130px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#fff1f2] to-white border border-[#ffe4e6] rounded-[16px] p-3 shadow-sm relative overflow-hidden group">
+>>>>>>> Stashed changes
           <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#ffe4e6]/50 rounded-full blur-xl group-hover:bg-[#fecdd3]/50 transition-all" />
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-[#e11d48] mb-1">Skipped</p>
               <p className="text-xl font-black tracking-tighter text-[#881337]">{counts.skipped}</p>
             </div>
+<<<<<<< Updated upstream
             <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#f43f5e] shadow-[0_2px_8px_rgba(244,63,94,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+=======
+            <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#f43f5e] shadow-[0_2px_8px_rgba(244,63,94,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+>>>>>>> Stashed changes
               <X className="h-4 w-4 stroke-[3]" />
             </div>
           </div>
         </div>
 
         {/* Paused Card */}
+<<<<<<< Updated upstream
         <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#fffbeb] to-white border border-[#fef3c7] rounded-[20px] p-3 shadow-sm relative overflow-hidden group">
+=======
+        <div className="min-w-[130px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#fffbeb] to-white border border-[#fef3c7] rounded-[16px] p-3 shadow-sm relative overflow-hidden group">
+>>>>>>> Stashed changes
           <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#fef3c7]/50 rounded-full blur-xl group-hover:bg-[#fde68a]/50 transition-all" />
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-[#d97706] mb-1">Paused</p>
               <p className="text-xl font-black tracking-tighter text-[#78350f]">{counts.paused}</p>
             </div>
+<<<<<<< Updated upstream
             <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#f59e0b] shadow-[0_2px_8px_rgba(245,158,11,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+=======
+            <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#f59e0b] shadow-[0_2px_8px_rgba(245,158,11,0.3)] text-white transform group-hover:scale-105 transition-transform shrink-0">
+>>>>>>> Stashed changes
               <Pause className="h-4 w-4 stroke-[3]" />
             </div>
           </div>
         </div>
 
         {/* Pending Card */}
+<<<<<<< Updated upstream
         <div className="min-w-[120px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#064e3b] via-[#053e2f] to-[#021f16] border border-[#14532d]/50 rounded-[20px] p-3 shadow-lg shadow-[#14532d]/10 relative overflow-hidden group">
+=======
+        <div className="min-w-[130px] w-[35vw] sm:w-auto shrink-0 snap-start bg-gradient-to-br from-[#064e3b] via-[#053e2f] to-[#021f16] border border-[#14532d]/50 rounded-[16px] p-3 shadow-lg shadow-[#14532d]/10 relative overflow-hidden group">
+>>>>>>> Stashed changes
           <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-[#4ade80]/20 rounded-full blur-xl group-hover:bg-[#4ade80]/30 transition-all" />
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-[#86efac] mb-1 drop-shadow-md">Pending</p>
               <p className="text-xl font-black tracking-tighter text-white drop-shadow-lg">{counts.pending}</p>
             </div>
+<<<<<<< Updated upstream
             <div className="h-8 w-8 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white transform group-hover:scale-105 transition-transform shadow-sm shrink-0">
+=======
+            <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-white transform group-hover:scale-105 transition-transform shadow-sm shrink-0">
+>>>>>>> Stashed changes
               <Clock className="h-4 w-4 stroke-[2.5]" />
             </div>
           </div>
@@ -466,7 +512,11 @@ export function DeliveryOperationsPanel({
             <article
               key={task.customerCode}
               className={cn(
+<<<<<<< Updated upstream
                 "bg-white rounded-[20px] p-3 sm:px-5 sm:py-4 transition-all duration-300 border mb-3 cursor-default hover:border-gray-200 hover:shadow-sm",
+=======
+                "bg-white rounded-[18px] px-3 py-3 transition-all duration-300 border mb-2 cursor-default hover:border-gray-200 hover:shadow-sm",
+>>>>>>> Stashed changes
                 isDelivered ? "bg-gradient-to-r from-[#ecfdf5]/80 to-white border-[#d1fae5] hover:border-[#a7f3d0]" : "border-gray-100",
                 !isPending && "opacity-90 grayscale-[0.1]"
               )}
@@ -476,18 +526,18 @@ export function DeliveryOperationsPanel({
                 {/* User Info */}
                 <div className="flex items-center gap-4 min-w-0 md:w-[35%]">
                   <div className={cn(
-                    "h-10 w-10 shrink-0 flex items-center justify-center rounded-xl transition-colors shadow-sm",
+                    "h-8 w-8 shrink-0 flex items-center justify-center rounded-xl transition-colors shadow-sm",
                     isDelivered ? "bg-[#10b981] text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]" :
                       isSkipped ? "bg-[#f43f5e] text-white shadow-[0_4px_12px_rgba(244,63,94,0.3)]" :
                         isPaused ? "bg-[#f59e0b] text-white shadow-[0_4px_12px_rgba(245,158,11,0.3)]" : "bg-gray-100 text-gray-500"
                   )}>
-                    {isDelivered ? <Check className="h-5 w-5 stroke-[3]" /> :
-                      isSkipped ? <X className="h-5 w-5 stroke-[3]" /> :
-                        isPaused ? <Pause className="h-5 w-5 stroke-[3]" /> : <MapPin className="h-5 w-5 stroke-[2.5]" />}
+                    {isDelivered ? <Check className="h-4 w-4 stroke-[3]" /> :
+                      isSkipped ? <X className="h-4 w-4 stroke-[3]" /> :
+                        isPaused ? <Pause className="h-4 w-4 stroke-[3]" /> : <MapPin className="h-4 w-4 stroke-[2.5]" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h2 className="truncate text-[15px] font-bold text-gray-900 tracking-tight">
+                      <h2 className="truncate text-[13px] font-bold text-gray-900 tracking-tight">
                         {task.customerName}
                       </h2>
                       <span className={cn(
@@ -506,13 +556,19 @@ export function DeliveryOperationsPanel({
                 </div>
 
                 {/* Quantity Controls */}
+<<<<<<< Updated upstream
                 <div className="flex justify-center md:justify-center md:w-[25%] mt-2 md:mt-0">
                   <div className="flex items-center bg-gray-50/80 backdrop-blur-sm rounded-xl p-1 border border-gray-200 shadow-inner w-auto justify-center">
+=======
+                <div className="flex justify-center md:justify-center md:w-[25%] mt-0">
+                   <div className="flex items-center bg-gray-50/80 backdrop-blur-sm rounded-xl p-1 border border-gray-200 shadow-inner w-auto justify-center">
+>>>>>>> Stashed changes
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(task.customerCode, -0.5)}
                       disabled={(task.actualQuantity || 0) <= 0}
                       className={cn(
+<<<<<<< Updated upstream
                         "flex h-8 w-8 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg sm:rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 hover:text-[#f43f5e] hover:border-[#ffe4e6] transition-all active:scale-90",
                         (task.actualQuantity || 0) <= 0 && "opacity-40 cursor-not-allowed"
                       )}
@@ -522,20 +578,37 @@ export function DeliveryOperationsPanel({
                     <div className="px-3 min-w-[50px] sm:min-w-[60px] shrink-0 text-center">
                       <span className="text-sm font-black text-gray-900 tracking-tighter">
                         {(task.actualQuantity || 0).toFixed(1)}L
+=======
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 hover:text-[#f43f5e] hover:border-[#ffe4e6] transition-all active:scale-90",
+                        (task.baseQuantity || 0) + (task.extraQuantity || 0) <= 0.5 && "opacity-40 cursor-not-allowed"
+                      )}
+                    >
+                       <Minus className="h-3 w-3 stroke-[3]" />
+                    </button>
+                     <div className="px-3 min-w-[52px] shrink-0 text-center">
+                       <span className="text-xs font-black text-gray-900 tracking-tighter">
+                        {((task.baseQuantity || 0) + (task.extraQuantity || 0)).toFixed(1)}L
+>>>>>>> Stashed changes
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(task.customerCode, 0.5)}
+<<<<<<< Updated upstream
                       className="flex h-8 w-8 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg sm:rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 hover:text-[#10b981] hover:border-[#d1fae5] transition-all active:scale-90"
                     >
                       <Plus className="h-3 w-3 sm:h-3 sm:w-3 stroke-[3]" />
+=======
+                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm border border-gray-100 hover:text-[#10b981] hover:border-[#d1fae5] transition-all active:scale-90"
+                    >
+                       <Plus className="h-3 w-3 stroke-[3]" />
+>>>>>>> Stashed changes
                     </button>
                   </div>
                 </div>
 
                 {/* Instructions & Actions */}
-                <div className="flex flex-col sm:flex-row items-center justify-end gap-3 md:w-[40%]">
+                <div className="flex items-center justify-end gap-2 shrink-0">
                   {task.deliveryInstruction && (
                     <div className="hidden xl:block max-w-[130px] mr-auto">
                       <p className="text-[10px] font-bold text-[#064e3b] italic leading-tight bg-[#ecfdf5] px-2 py-1.5 rounded-lg truncate">
@@ -544,14 +617,22 @@ export function DeliveryOperationsPanel({
                     </div>
                   )}
 
+<<<<<<< Updated upstream
                   <div className="flex items-center w-full sm:w-auto gap-2 mt-2 md:mt-0 justify-end">
+=======
+                  <div className="flex items-center gap-2">
+>>>>>>> Stashed changes
                     <button
                       type="button"
                       onClick={() => saveStatus(task.customerCode, isDelivered ? "RESET" : "DELIVERED", task.status)}
                       disabled={loadingKey !== null}
                       style={isDelivered ? { backgroundColor: '#10b981', color: 'white' } : undefined}
                       className={cn(
+<<<<<<< Updated upstream
                         "flex-1 sm:w-24 flex items-center justify-center gap-1 h-10 rounded-xl font-bold transition-all active:scale-95 text-[11px] sm:text-[10px] uppercase tracking-widest",
+=======
+                        "flex items-center justify-center gap-1 h-8 px-3 rounded-lg font-bold transition-all active:scale-95 text-[10px] uppercase tracking-widest",
+>>>>>>> Stashed changes
                         isDelivered
                           ? "shadow-[0_4px_10px_rgba(16,185,129,0.3)]"
                           : cn(
@@ -564,8 +645,13 @@ export function DeliveryOperationsPanel({
                         <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
                         <>
+<<<<<<< Updated upstream
                           <Check className="h-3.5 w-3.5 stroke-[3]" />
                           {isDelivered ? "Delivered" : "Deliver"}
+=======
+                          <Check className="h-3 w-3 stroke-[3]" />
+                          {isDelivered ? "Done" : "Deliver"}
+>>>>>>> Stashed changes
                         </>
                       )}
                     </button>
@@ -576,7 +662,11 @@ export function DeliveryOperationsPanel({
                       disabled={loadingKey !== null}
                       style={isSkipped ? { backgroundColor: '#f43f5e', color: 'white' } : undefined}
                       className={cn(
+<<<<<<< Updated upstream
                         "flex h-10 w-10 items-center justify-center rounded-xl font-black transition-all active:scale-95 shrink-0",
+=======
+                        "flex h-8 w-8 items-center justify-center rounded-lg font-black transition-all active:scale-95 shrink-0",
+>>>>>>> Stashed changes
                         isSkipped
                           ? "shadow-[0_4px_10px_rgba(244,63,94,0.3)]"
                           : cn(
@@ -589,7 +679,11 @@ export function DeliveryOperationsPanel({
                       {loadingKey === `${task.customerCode}:SKIPPED` ? (
                         <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
+<<<<<<< Updated upstream
                         <X className="h-4 w-4 stroke-[3]" />
+=======
+                        <X className="h-3 w-3 stroke-[3]" />
+>>>>>>> Stashed changes
                       )}
                     </button>
 
@@ -599,7 +693,11 @@ export function DeliveryOperationsPanel({
                       disabled={loadingKey !== null}
                       style={isPaused ? { backgroundColor: '#f59e0b', color: 'white' } : undefined}
                       className={cn(
+<<<<<<< Updated upstream
                         "flex h-10 w-10 items-center justify-center rounded-xl font-black transition-all active:scale-95 shrink-0",
+=======
+                        "flex h-8 w-8 items-center justify-center rounded-lg font-black transition-all active:scale-95 shrink-0",
+>>>>>>> Stashed changes
                         isPaused
                           ? "shadow-[0_4px_10px_rgba(245,158,11,0.3)]"
                           : cn(
@@ -612,7 +710,11 @@ export function DeliveryOperationsPanel({
                       {loadingKey === `${task.customerCode}:PAUSED` ? (
                         <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
+<<<<<<< Updated upstream
                         <Pause className="h-4 w-4 stroke-[3]" />
+=======
+                        <Pause className="h-3 w-3 stroke-[3]" />
+>>>>>>> Stashed changes
                       )}
                     </button>
                   </div>
@@ -676,6 +778,6 @@ export function DeliveryOperationsPanel({
           ))}
         </div>
       </AdminModal>
-    </div>
+    </div >
   );
 }

@@ -300,15 +300,15 @@ export default async function AdminDashboardPage({
     </AdminShell>
   );
 }
-
 const customStyles = `
-  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   
   @media (max-width: 768px) {
     .stats-row { 
       display: flex;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
+<<<<<<< Updated upstream
       padding-bottom: 8px;
       margin: 0 -16px;
       padding-left: 16px;
@@ -323,57 +323,72 @@ const customStyles = `
       min-width: 200px;
       flex-shrink: 0;
       scroll-snap-align: start;
+=======
+      gap: 10px;
+      padding-bottom: 8px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+>>>>>>> Stashed changes
     }
+    .stats-row::-webkit-scrollbar { display: none; }
   }
 
   .stat-card { 
     background: white; 
+<<<<<<< Updated upstream
     border-radius: 20px; 
     padding: 16px; 
+=======
+    border-radius: 18px; 
+    padding: 14px 16px; 
+>>>>>>> Stashed changes
     position: relative; 
     overflow: hidden; 
     border: 1px solid #f3f4f6;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    min-width: 140px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
   }
 
   .stat-card .blob { 
     position: absolute; 
     right: -20px; 
     top: -20px; 
-    width: 100px; 
-    height: 100px; 
+    width: 80px; 
+    height: 80px; 
     border-radius: 50%; 
-    filter: blur(20px);
+    filter: blur(16px);
   }
 
   .stat-lbl { 
-    font-size: 10px; 
+    font-size: 9px; 
     font-weight: 800; 
     color: #9CA3AF; 
-    margin-bottom: 8px; 
+    margin-bottom: 6px; 
     text-transform: uppercase; 
     letter-spacing: 0.05em; 
   }
 
   .stat-val { 
-    font-size: 28px; 
+    font-size: 22px; 
     font-weight: 900; 
     color: #111827; 
     line-height: 1; 
-    margin-bottom: 12px; 
+    margin-bottom: 8px; 
     letter-spacing: -0.02em; 
   }
 
   .stat-pill { 
-    font-size: 10px; 
+    font-size: 9px; 
     font-weight: 700; 
-    padding: 4px 10px; 
+    padding: 3px 8px; 
     border-radius: 20px; 
     display: inline-block; 
   }
   
-  .mid-row { display: grid; grid-template-columns: 1.2fr 1fr 0.8fr; gap: 16px; }
-  .bottom-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .mid-row { display: grid; grid-template-columns: 1.2fr 1fr 0.8fr; gap: 12px; }
+  .bottom-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
 
   .pill-green { background: #f0fdf4; color: #15803d; }
   .pill-blue { background: #eff6ff; color: #1d4ed8; }
