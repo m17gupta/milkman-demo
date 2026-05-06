@@ -556,12 +556,11 @@ export async function getDashboardData() {
           : entry.todayException?.type === "PAUSE"
             ? "Delivery paused"
             : "Delivery skipped",
-      tone:
-        entry.totals.dueAmount > 0
-          ? "danger"
-          : entry.todayException?.type === "PAUSE"
-            ? "warning"
-            : "blue",
+      tone: (entry.totals.dueAmount > 0
+        ? "danger"
+        : entry.todayException?.type === "PAUSE"
+          ? "warning"
+          : "blue") as "blue" | "success" | "warning" | "danger",
     }));
 
   return {
@@ -693,7 +692,15 @@ export async function getBillingData() {
             customerCode: customer?.customerCode || "",
             customerName: customer?.name || "Unknown",
             date,
-            dateLabel: formatDateLabel(payment.date),
+            dateLabel: new Intl.DateTimeFormat("en-IN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+              timeZone: "Asia/Kolkata"
+            }).format(new Date(payment.date)),
             totalAmount: 0,
             transactions: [],
           });
@@ -705,6 +712,7 @@ export async function getBillingData() {
           id: String(payment._id),
           amount: payment.amount,
           mode: payment.mode,
+          date: payment.date,
           note: payment.note || "",
         });
       }
