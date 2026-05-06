@@ -1592,7 +1592,8 @@ textarea {
 .landing-hero {
   position: relative;
   width: 100%;
-  padding: 60px 16px 40px; /* Increased top padding to avoid header overlap */
+  padding: 60px 16px 40px;
+  /* Increased top padding to avoid header overlap */
   background: linear-gradient(160deg, #E0F2FE 0%, #BAE6FD 100%);
   display: flex;
   flex-direction: column;
@@ -1732,7 +1733,8 @@ textarea {
 /* Card Overlap Section */
 .landing-cards-container {
   max-width: 1200px;
-  margin: 16px auto 0; /* Remove negative margin on mobile */
+  margin: 16px auto 0;
+  /* Remove negative margin on mobile */
   padding: 16px;
   position: relative;
   z-index: 20;
@@ -1749,7 +1751,8 @@ textarea {
   background: #FFFFFF;
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 16px; /* Mobile-first padding */
+  padding: 16px;
+  /* Mobile-first padding */
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   display: flex;
@@ -1853,6 +1856,7 @@ textarea {
   left: -100px;
   background: #FEF3C7;
 }
+
 /* Specific mobile-first dashboard extensions */
 .attention-item {
   display: flex;
@@ -1916,4 +1920,3 @@ textarea {
   border: 1px solid var(--border);
   color: var(--ink-700);
 }
-

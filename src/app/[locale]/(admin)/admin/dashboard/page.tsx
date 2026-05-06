@@ -60,7 +60,7 @@ export default async function AdminDashboardPage({
     <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")}>
       <div className="space-y-4">
         {/* 1. KPI Cards Row */}
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <AdminStatCard
             label={t("stats.activeCustomers")}
             value={String(kpis.activeCustomers)}
@@ -81,6 +81,7 @@ export default async function AdminDashboardPage({
             hint={t("stats.monthlySalesHint")}
             icon={BadgeIndianRupee}
             tone="warning"
+            className="col-span-2 md:col-span-1"
           />
           <AdminStatCard
             label={t("stats.outstandingDues")}
@@ -88,6 +89,7 @@ export default async function AdminDashboardPage({
             hint={t("stats.outstandingDuesHint", { count: attentionCustomers.filter(c => c.tone === "danger").length })}
             icon={CircleAlert}
             tone="danger"
+            className="col-span-2 md:col-span-1"
           />
         </div>
 

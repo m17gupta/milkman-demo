@@ -158,21 +158,21 @@ export function AdminShell({
 
         <aside
           className={cn(
-            "fixed left-0 top-[64px] z-50 h-[calc(100vh-64px)] w-[308px] max-w-[86vw] p-3 transition-transform duration-200 lg:hidden",
+            "fixed left-0 top-[64px] z-50 h-[calc(100vh-64px)] w-[308px] max-w-[86vw] p-4 transition-transform duration-200 lg:hidden",
             isDrawerOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="admin-panel flex h-full flex-col rounded-[32px] p-5 overflow-y-auto">
-            <div className="flex items-center justify-between gap-3">
+          <div className="admin-panel flex h-full flex-col rounded-[32px] p-6 shadow-2xl overflow-y-auto">
+            <div className="flex items-center justify-between gap-3 pt-2">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
                   <Droplets className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[13px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
                     {tShell("brand")}
                   </p>
-                  <p className="text-lg font-semibold">{tShell("mobileTitle")}</p>
+                  <p className="text-lg font-bold text-[var(--admin-text)]">{tShell("mobileTitle")}</p>
                 </div>
               </div>
               <button
@@ -185,22 +185,22 @@ export function AdminShell({
               </button>
             </div>
 
-            <div className="admin-panel-muted mt-5 rounded-[24px] p-4">
-              <p className="text-sm font-medium text-[var(--admin-muted)]">
+            <div className="admin-panel-muted mt-6 rounded-[24px] p-4">
+              <p className="text-xs font-bold text-[var(--admin-muted)] uppercase tracking-wider">
                 {tShell("activeRoute")}
               </p>
-              <p className="mt-1 text-base font-semibold">
+              <p className="mt-1 text-base font-bold text-[var(--admin-text)]">
                 {tShell("customersThisCycle", { count: 128 })}
               </p>
             </div>
 
-            <nav className="mt-5 space-y-2">{navItems.map(renderNavItem)}</nav>
+            <nav className="mt-6 space-y-2">{navItems.map(renderNavItem)}</nav>
           </div>
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="sticky top-[76px] z-30 mb-4">
-            <div className="admin-panel rounded-[30px] px-4 py-3 sm:px-5">
+          <header className="sticky top-16 z-30 mb-8 sm:top-[76px] sm:mb-6">
+            <div className="admin-panel rounded-[30px] px-4 py-3 shadow-lg shadow-blue-900/5 sm:px-5 sm:shadow-none">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <button
@@ -212,10 +212,10 @@ export function AdminShell({
                     <Menu className="h-5 w-5" />
                   </button>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+                    <p className="truncate text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--admin-muted)] sm:text-[13px]">
                       {tShell("workspaceEyebrow")}
                     </p>
-                    <p className="truncate text-lg font-semibold text-[var(--admin-text)] sm:text-xl">
+                    <p className="truncate text-base font-bold text-[var(--admin-text)] sm:text-xl">
                       {title}
                     </p>
                   </div>
@@ -234,9 +234,9 @@ export function AdminShell({
             </div>
           </header>
 
-          <main className="space-y-4 pb-24">
+          <main className="mt-4 space-y-8 pb-24 sm:mt-0 sm:space-y-4">
             {!hideHero && (
-              <section className="admin-panel rounded-[32px] px-5 py-5 sm:px-6">
+              <section className="admin-panel rounded-[32px] px-5 py-5 sm:px-6 hidden md:block">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--admin-muted)]">
