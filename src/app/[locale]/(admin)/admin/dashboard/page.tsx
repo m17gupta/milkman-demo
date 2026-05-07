@@ -16,6 +16,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { AdminBadge, AdminCard, AdminStatCard } from "@/components/layout/admin-ui";
 import { getAdminCalendarData, getDashboardData, getPurchaseLedgerData } from "@/lib/data-service";
+import { formatCurrencyINR } from "@/lib/utils";
 import { LiveClock } from "@/components/layout/live-clock";
 
 type AdminDashboardPageProps = {
@@ -218,7 +219,7 @@ export default async function AdminDashboardPage({
                     <div className="text-xs font-bold text-gray-800 truncate">{entry.name}</div>
                     <div className="text-[10px] text-gray-400 font-medium truncate">{entry.info}</div>
                   </div>
-                  <div className={`shrink-0 whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-bold tracking-tight uppercase ${entry.tone === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+                  <div className={`shrink-0 whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-bold tracking-tight uppercase ${entry.tone === 'red' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                     }`}>
                     {entry.issue}
                   </div>
