@@ -20,7 +20,6 @@ import { AdminBadge, AdminCard, AdminStatCard } from "@/components/layout/admin-
 
 import { cn, formatCurrencyINR } from "@/lib/utils";
 import { getAdminCalendarData, getDashboardData, getPurchaseLedgerData } from "@/lib/data-service";
-import { formatCurrencyINR } from "@/lib/utils";
 import { LiveClock } from "@/components/layout/live-clock";
 
 type AdminDashboardPageProps = {
@@ -199,9 +198,6 @@ export default async function AdminDashboardPage({
                   <div className="h-1.5 bg-gray-50 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${p.val}%`, background: p.color }}></div>
                   </div>
-                  <AdminBadge tone={entry.tone}>
-                    {entry.issue}
-                  </AdminBadge>
                 </div>
               ))}
             </div>
