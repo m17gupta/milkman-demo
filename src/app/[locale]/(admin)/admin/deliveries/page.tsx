@@ -47,15 +47,8 @@ export default async function AdminDeliveriesPage({
   return (
     <AdminShell locale={locale} title={t("title")} subtitle={t("subtitle")}>
       <DeliveryOperationsPanel
-        entries={entries.map((e) => ({ 
-          ...e, 
-          baseQuantity: e.defaultQuantity ?? 0, 
-          finalQuantity: e.actualQuantity ?? 0 
-        }))}
-        areas={areas.map((area) => ({ 
-          code: area.code, 
-          name: typeof area.name === "string" ? area.name : (area.name as Record<string, string>)[locale] ?? (area.name as Record<string, string>)["en"] ?? area.code 
-        }))}
+        entries={entries}
+        areas={areas.map((area) => ({ code: area.code, name: area.name }))}
         counts={{
           delivered: deliveredCount,
           skipped: skippedCount,

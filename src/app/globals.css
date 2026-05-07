@@ -117,9 +117,6 @@
   html {
     background: var(--bg) !important;
   }
-  body {
-    overflow-x: clip;
-  }
 }
 
 @theme inline {
