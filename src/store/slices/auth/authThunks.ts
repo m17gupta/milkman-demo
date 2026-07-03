@@ -22,6 +22,7 @@ export const loginUser = createAsyncThunk(
     }
 
     const data = await res.json();
+    console.log("logindatta", data)
     return { user: data.user as UserRecord, token: data.token as string };
   },
 );

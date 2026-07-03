@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Milk, ArrowRight, Smartphone } from "lucide-react";
+import { Milk, ArrowRight, Smartphone, Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginUser } from "@/store/slices/auth/authThunks";
 import { clearAuthError } from "@/store/slices/auth/authSlice";
@@ -21,11 +21,11 @@ export default function LoginPage() {
     e.preventDefault();
     dispatch(clearAuthError());
 
-    const result = await dispatch(loginUser(phone));
-
-    if (loginUser.fulfilled.match(result)) {
-      const role = result.payload.user.role;
-      const target = role === "CUSTOMER" ? "customer/dashboard" : "admin/dashboard";
+    const result = await dispatch(loginUser(phone)).unwrap();
+      console.log("userlogin", result)
+    if (result?.user?.role) {
+      const role = result.user.role;
+         const target = role === "CUSTOMER" ? "customer/dashboard" : "admin/dashboard";
       router.push(`/${locale}/${target}`);
     }
   }
@@ -77,7 +77,7 @@ export default function LoginPage() {
             disabled={phone.length !== 10 || loading}
             className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-[var(--brand)] py-4 text-sm font-semibold text-white transition hover:bg-[var(--brand-ink)] disabled:opacity-50"
           >
-            {loading ? "..." : t("submit")}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t("submit")}
             {!loading && <ArrowRight className="h-4 w-4" />}
           </button>
         </form>
