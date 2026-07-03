@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
-import { UserMenu } from "@/components/layout/user-menu";
+import { LogoutButton } from "@/components/auth/logout-button";
 import type { AppLocale } from "@/i18n/routing";
 
 type PlatformHeaderProps = {
@@ -44,8 +44,8 @@ export async function PlatformHeader({
         </span>
       </Link>
       <div className="flex items-center gap-3">
-        <UserMenu locale={locale} />
         <LanguageSwitcher locale={locale} />
+        <LogoutButton locale={locale} />
       </div>
     </header>
   );

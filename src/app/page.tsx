@@ -93,7 +93,7 @@ export default function Home() {
                   Customer dashboard
                 </Link>
                 <Link
-                  href="/en/login"
+                  href="/login"
                   className="rounded-2xl border border-border bg-white px-4 py-3 text-sm font-medium transition hover:border-primary"
                 >
                   Login

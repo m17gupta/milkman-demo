@@ -1,12 +1,18 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
-export function ConditionalHeader({ children }: { children: React.ReactNode }) {
+type ConditionalHeaderProps = {
+  children: ReactNode;
+};
+
+export function ConditionalHeader({ children }: ConditionalHeaderProps) {
   const pathname = usePathname();
 
-  // Hide the platform header on any admin routes because they have their own shell
-  if (pathname && pathname.includes("/admin")) {
+  const isAuthPage = pathname.endsWith("/login");
+
+  if (isAuthPage) {
     return null;
   }
 

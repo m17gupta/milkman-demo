@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { AuthGuard } from "@/components/auth/auth-guard";
 import { PlatformHeader } from "@/components/layout/platform-header";
 import { locales, type AppLocale } from "@/i18n/routing";
 import { ConditionalHeader } from "@/components/layout/conditional-header";

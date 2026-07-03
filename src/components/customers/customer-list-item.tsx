@@ -4,11 +4,19 @@ import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { formatCurrencyINR, cn } from "@/lib/utils";
 import { CustomerCardActions } from "./customer-card-actions";
-import { CustomerDetailModal } from "./customer-detail-modal";
-import { CustomerSchedulePopover } from "./customer-schedule-popover";
+import { CustomerCalendarModal } from "./customer-calendar-modal";
 
 type CustomerListItemProps = {
-  customer: any;
+  customer: {
+    id: string;
+    customerCode: string;
+    name: string;
+    status: string;
+    areaName: string;
+    quantity: number;
+    due: number;
+    lastPaymentDate?: string | Date | null;
+  };
   locale: string;
   onView?: (mode: "view" | "details" | "schedule" | "edit") => void;
   isMenuOpen: boolean;
@@ -20,9 +28,9 @@ export function CustomerListItem({
   locale,
   onView,
   isMenuOpen,
-  setMenuOpen
+  setMenuOpen,
 }: CustomerListItemProps) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const formatDateShort = (date: Date | string | null | undefined) => {
     if (!date) return "N/A";
@@ -32,79 +40,90 @@ export function CustomerListItem({
     }).format(new Date(date));
   };
 
+  const initials = customer.name
+    .split(" ")
+    .slice(0, 2)
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase();
+
+  const isActive = customer.status === "ACTIVE";
+  const hasDue = customer.due > 0;
+
   return (
-    <article
-      onClick={() => onView?.("view")}
-      className={cn(
-        "bg-white rounded-[20px] px-4 py-4 transition-all relative group border border-gray-100 mb-3 cursor-pointer hover:border-green-200 hover:shadow-md",
-        // Dynamic Z-index to keep popovers on top
-        (isMenuOpen || isPopoverOpen) ? "z-[50] ring-2 ring-[#064e3b]/10 shadow-lg" : "z-10 shadow-sm"
-      )}
-    >
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Info Block */}
-        <div className="flex items-center gap-3">
-          <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50 text-[#064e3b] font-black text-xs sm:flex shadow-sm">
-            {customer.name.substring(0, 2).toUpperCase()}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-gray-900 text-sm tracking-tight">{customer.name}</h3>
-              <span className={cn(
-                "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter",
-                customer.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-              )}>
-                {customer.status}
-              </span>
-            </div>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
-              {customer.areaName} <span className="mx-1 text-gray-200">•</span> {customer.quantity.toFixed(1)}L
-            </p>
-          </div>
-        </div>
-
-        {/* Action Block */}
-        <div className="flex items-center justify-between md:justify-end gap-4 mt-2 md:mt-0">
-          <div className="text-left md:text-right">
-            <p className={cn(
-              "text-base font-black tracking-tighter leading-none",
-              customer.due > 500 ? "text-red-600" : "text-[#064e3b]"
-            )}>
-              {formatCurrencyINR(customer.due)}
-            </p>
-            <div className="flex items-center justify-start md:justify-end gap-1 mt-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">
-              DUE <span className="w-1 h-1 bg-gray-200 rounded-full" /> PAID: {formatDateShort(customer.lastPaymentDate)}
-            </div>
+    <>
+      <article
+        onClick={() => onView?.("view")}
+        className={cn(
+          "bg-white rounded-2xl px-4 py-4 transition-all relative group border border-gray-100 mb-3 cursor-pointer",
+          isMenuOpen
+            ? "z-[50] shadow-xl border-[#064e3b]/20 overflow-visible"
+            : "z-10 shadow-sm hover:shadow-md hover:border-gray-200 overflow-visible",
+        )}
+      >
+        <div className="relative z-10 flex items-center gap-2 sm:gap-3">
+          <div
+            className={cn(
+              "hidden sm:flex h-11 w-11 shrink-0 rounded-xl items-center justify-center font-black text-sm shadow-sm",
+              isActive
+                ? "bg-gradient-to-br from-[#dcfce7] to-[#bbf7d0] text-[#064e3b]"
+                : "bg-amber-50 text-amber-700",
+            )}
+          >
+            {initials}
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevents row click
-                  setIsPopoverOpen(!isPopoverOpen);
-                }}
+          <div className="flex-1 min-w-0">
+            <h3 className="truncate text-[15px] font-bold text-gray-900 tracking-tight leading-snug">
+              {customer.name}
+            </h3>
+            <div className="flex items-center gap-2 mt-0.5 overflow-hidden">
+              <span
                 className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all border",
-                  isPopoverOpen
-                    ? "bg-green-100 text-[#064e3b] border-green-200 shadow-inner"
-                    : "bg-gray-50 text-gray-400 border-transparent hover:bg-green-50 hover:text-[#064e3b]"
+                  "shrink-0 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide",
+                  isActive ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700",
                 )}
               >
-                <CalendarDays size={16} strokeWidth={2.5} />
-              </button>
-
-              <CustomerSchedulePopover
-                isOpen={isPopoverOpen}
-                onClose={() => setIsPopoverOpen(false)}
-                customerCode={customer.customerCode}
-                onViewFull={() => {
-                  setIsPopoverOpen(false);
-                  onView?.("schedule");
-                }}
-              />
+                {customer.status}
+              </span>
+              <span className="text-[11px] text-gray-400 font-semibold truncate">
+                {customer.areaName}
+                <span className="mx-1 text-gray-300">·</span>
+                {customer.quantity.toFixed(1)}L
+              </span>
             </div>
+          </div>
+
+          <div className="shrink-0 text-right flex flex-col items-end justify-center min-w-[100px] mr-4 sm:mr-6">
+            <p className="text-xl font-black tracking-tighter leading-none text-[#e11d48]">
+              {formatCurrencyINR(customer.due)}
+            </p>
+            <div className="mt-2 flex items-center justify-end gap-1.5 opacity-70">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.12em]">DUE</span>
+              <span className="text-gray-300 text-[10px]">•</span>
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.12em]">
+                paid:{" "}
+                {customer.lastPaymentDate
+                  ? new Date(customer.lastPaymentDate).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                    })
+                  : "n/a"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCalendarOpen(true);
+              }}
+              className="w-11 h-11 rounded-xl flex items-center justify-center border border-gray-100 bg-white text-gray-400 hover:text-gray-900 hover:shadow-md transition-all active:scale-90 shadow-sm"
+            >
+              <CalendarDays size={18} strokeWidth={2.5} />
+            </button>
 
             <CustomerCardActions
               id={customer.id}
@@ -116,7 +135,13 @@ export function CustomerListItem({
             />
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+
+      <CustomerCalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        customer={customer}
+      />
+    </>
   );
 }

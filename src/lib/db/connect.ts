@@ -32,7 +32,6 @@ export async function connectToDatabase() {
   if (!cache.promise) {
     cache.promise = mongoose.connect(connectionUri, {
       dbName: MONGODB_DB_NAME,
-      bufferCommands: false,
     });
   }
 

@@ -11,7 +11,9 @@ export function UserMenu({ locale }: { locale: string }) {
   const pathname = usePathname();
 
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    Promise.resolve().then(() => setMounted(true));
+  }, []);
 
   // Robust landing page check: /en, /hi, /pa, /en/, / or empty
   const isLandingPage = pathname === `/${locale}` || pathname === `/${locale}/` || pathname === "/" || pathname === "";

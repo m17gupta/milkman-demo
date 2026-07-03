@@ -18,11 +18,31 @@ import { useParams } from "next/navigation";
 import { CustomerShell } from "@/components/layout/customer-shell";
 import { formatCurrencyINR } from "@/lib/utils";
 import { DashboardCalendar } from "@/components/calendar/dashboard-calendar";
+import type { CalendarDayRecord } from "@/lib/calendar";
+
+type CustomerDashboardData = {
+  name: string;
+  phone: string;
+  areaName: string;
+  quantityLabel: string;
+  rate: number;
+  billed: number;
+  due: number;
+  customerCode: string;
+  recentDeliveries: Array<{ dateLabel: string; status: string }>;
+  calendarData?: {
+    monthMeta: {
+      monthLabel: string;
+      leadingBlankSlots: number;
+    };
+    days: CalendarDayRecord[];
+  };
+};
 
 export default function CustomerDashboardPage() {
   const t = useTranslations();
   const { locale } = useParams();
-  const [customer, setCustomer] = useState<any>(null);
+  const [customer, setCustomer] = useState<CustomerDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,9 +83,9 @@ export default function CustomerDashboardPage() {
                   dayOfMonth: day,
                   dateKey,
                   dateLabel: `${day} May 2026`,
+                  weekdayLabel: new Date(dateKey).toLocaleDateString("en-IN", { weekday: "short" }),
                   status: i < 4 ? "DELIVERED" : "PENDING",
                   liters: 4.0,
-                  unit: t("common.liters"),
                   isFuture: i >= 4,
                 };
               }),
@@ -103,13 +123,15 @@ export default function CustomerDashboardPage() {
   };
 
   // If customer is still null, we'll show the dummy UI anyway as requested
-  const displayCustomer = customer || {
+  const displayCustomer: CustomerDashboardData = customer || {
     name: demoNames[locale as string] || "Ritu",
+    phone: "0000000000",
     areaName: demoAreas[locale as string] || "Landra",
     quantityLabel: `4.0 ${t("common.liters")}`,
     billed: 1848,
     due: 660,
     rate: 66,
+    customerCode: "DEMO-0000",
     recentDeliveries: [],
   };
 

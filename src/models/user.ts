@@ -4,9 +4,19 @@ const userSchema = new Schema(
   {
     role: {
       type: String,
-      enum: ["CUSTOMER", "ADMIN"],
+      enum: ["CUSTOMER", "ADMIN", "SUPER_ADMIN"],
       required: true,
       default: "CUSTOMER",
+    },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      lowercase: true,
+    },
+    passwordHash: {
+      type: String,
     },
     name: {
       en: { type: String, trim: true },
@@ -33,6 +43,15 @@ const userSchema = new Schema(
       type: String,
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
+    },
+    lastLoginAt: {
+      type: Date,
+    },
+    lastLoginIp: {
+      type: String,
+    },
+    lastLogoutAt: {
+      type: Date,
     },
   },
   {

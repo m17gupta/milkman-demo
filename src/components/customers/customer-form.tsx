@@ -84,7 +84,10 @@ export function CustomerForm({
 
     try {
       const { internalNote, ...rest } = form;
-      const payload: any = {
+      const payload: {
+        [key: string]: string | number | undefined;
+        notes?: string;
+      } = {
         ...rest,
         quantityLiters: Number(form.quantityLiters),
         pricePerLiter: Number(form.pricePerLiter),

@@ -12,23 +12,27 @@ type CustomerSchedulePopoverProps = {
   onViewFull: () => void;
 };
 
+type CustomerScheduleData = {
+  exceptions?: Array<{ date: string; type: "PAUSE" | "RESUME" | "SKIP" }>;
+};
+
 export function CustomerSchedulePopover({
   isOpen,
   onClose,
   customerCode,
   onViewFull
 }: CustomerSchedulePopoverProps) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CustomerScheduleData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setIsLoading(true);
+      Promise.resolve().then(() => setIsLoading(true));
       fetch(`/api/customers/${customerCode}`)
         .then((res) => res.json())
-        .then((resData) => {
-          setData(resData.customer);
+        .then((resData: { customer?: CustomerScheduleData }) => {
+          setData(resData.customer ?? null);
         })
         .finally(() => setIsLoading(false));
     }
@@ -47,8 +51,8 @@ export function CustomerSchedulePopover({
   if (!isOpen) return null;
 
   const exceptions = data?.exceptions || [];
-  const activePause = exceptions.find((ex: any) => ex.type === "PAUSE");
-  const resumeDate = exceptions.find((ex: any) => ex.type === "RESUME")?.date;
+  const activePause = exceptions.find((ex) => ex.type === "PAUSE");
+  const resumeDate = exceptions.find((ex) => ex.type === "RESUME")?.date;
 
   return (
     <div 

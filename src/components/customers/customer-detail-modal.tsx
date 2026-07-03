@@ -44,9 +44,14 @@ type CustomerDetailModalProps = {
     notes?: string;
     deliveryInstruction?: string;
   } | null;
-  areas?: any[];
+  areas?: Array<{ code: string; name: string }>;
   locale: string;
   mode?: "view" | "details" | "edit" | "schedule";
+};
+
+type CustomerDetailData = {
+  exceptions?: Array<{ date: string; type: "PAUSE" | "RESUME" | "SKIP" }>;
+  recentDeliveries?: DeliveryLog[];
 };
 
 export function CustomerDetailModal({ 
@@ -59,15 +64,15 @@ export function CustomerDetailModal({
 }: CustomerDetailModalProps) {
   const [logs, setLogs] = useState<DeliveryLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [fullData, setFullData] = useState<any>(null);
+  const [fullData, setFullData] = useState<CustomerDetailData | null>(null);
 
   useEffect(() => {
     if (isOpen && customer) {
-      setIsLoading(true);
+      Promise.resolve().then(() => setIsLoading(true));
       fetch(`/api/customers/${customer.customerCode}`)
         .then((res) => res.json())
-        .then((data) => {
-          setFullData(data.customer);
+        .then((data: { customer?: CustomerDetailData }) => {
+          setFullData(data.customer ?? null);
           if (data.customer?.recentDeliveries) {
             setLogs(data.customer.recentDeliveries);
           }
@@ -77,6 +82,7 @@ export function CustomerDetailModal({
   }, [isOpen, customer]);
 
   if (!customer) return null;
+  const activeExceptions = fullData?.exceptions ?? [];
 
   // Helper to get color for a specific day from logs
   const getDayStatus = (dayNum: number) => {
@@ -199,14 +205,14 @@ export function CustomerDetailModal({
                     </p>
                  </div>
 
-                 {fullData?.exceptions?.length > 0 ? (
+                 {activeExceptions.length > 0 ? (
                     <div className="rounded-[24px] bg-amber-50 border border-amber-100 p-4">
                         <div className="flex items-center gap-2 text-amber-600 mb-2">
                             <CirclePause className="h-4 w-4" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Active Pauses</span>
                         </div>
                         <div className="space-y-2">
-                            {fullData.exceptions.map((ex: any, idx: number) => (
+                            {activeExceptions.map((ex, idx: number) => (
                                 <div key={idx} className="flex justify-between items-center text-xs font-bold text-amber-900">
                                     <span>{new Date(ex.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</span>
                                     <AdminBadge tone="warning" className="text-[9px]">{ex.type}</AdminBadge>
@@ -266,7 +272,7 @@ export function CustomerDetailModal({
                     <span className="text-xs font-bold uppercase tracking-wider">Delivery Instruction</span>
                   </div>
                   <p className="mt-2 text-sm font-bold text-blue-900 leading-relaxed">
-                    "{customer.deliveryInstruction}"
+                    &ldquo;{customer.deliveryInstruction}&rdquo;
                   </p>
                 </div>
               )}

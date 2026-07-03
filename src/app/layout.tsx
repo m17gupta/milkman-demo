@@ -4,7 +4,6 @@ import {
   Noto_Sans_Mono,
   Noto_Sans_Gurmukhi,
 } from "next/font/google";
-import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 // Primary UI font — covers Latin + Devanagari.
@@ -39,12 +38,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
   return (
-    <html
-      lang={locale}
-      className={`${notoSans.variable} ${notoSansGurmukhi.variable} ${notoSansMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${notoSans.variable} ${notoSansGurmukhi.variable} ${notoSansMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

@@ -8,16 +8,31 @@ export default function DashboardRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    const user = userStr ? JSON.parse(userStr) : null;
+    const locale = window.location.pathname.split("/")[1] || "en";
 
-    if (user?.role === "ADMIN") {
-      router.push("/admin/dashboard");
-    } else if (user) {
-      router.push("/customer/dashboard");
-    } else {
-      router.push("/login");
+    async function checkRedirect() {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            if (data.user.role === "ADMIN" || data.user.role === "SUPER_ADMIN") {
+              router.replace(`/${locale}/admin/dashboard`);
+              return;
+            } else if (data.user.role === "CUSTOMER") {
+              router.replace(`/${locale}/customer/dashboard`);
+              return;
+            }
+          }
+        }
+        router.replace("/login?locale=" + encodeURIComponent(locale));
+      } catch (err) {
+        console.error("Redirect check failed:", err);
+        router.replace("/login?locale=" + encodeURIComponent(locale));
+      }
     }
+
+    checkRedirect();
   }, [router]);
 
   return (

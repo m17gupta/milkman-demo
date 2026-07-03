@@ -14,6 +14,7 @@ import {
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "./language-switcher";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 type CustomerShellProps = {
   children: React.ReactNode;
@@ -61,7 +62,10 @@ export function CustomerShell({ children, locale }: CustomerShellProps) {
             <span className="brand-tagline">{t("brand.tagline")}</span>
           </span>
         </Link>
-        <LanguageSwitcher />
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <LogoutButton locale={locale} />
+        </div>
       </header>
 
       <main className="app-shell-main pt-2">{children}</main>

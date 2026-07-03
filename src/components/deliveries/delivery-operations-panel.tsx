@@ -63,6 +63,13 @@ function getStatusTone(status: DeliveryEntry["status"]) {
   return "blue";
 }
 
+function getAreaDisplayName(
+  name: string | { en: string; hi: string; pa: string },
+  locale: string
+) {
+  return typeof name === "string" ? name : name[locale as keyof typeof name] || name.en;
+}
+
 export function DeliveryOperationsPanel({
   entries,
   areas,
@@ -102,9 +109,7 @@ export function DeliveryOperationsPanel({
   const selectedAreaName = useMemo(() => {
     const area = areas.find((a) => a.code === filters.area);
     if (!area) return "All locations";
-    return typeof area.name === "string"
-      ? area.name
-      : area.name[locale as keyof typeof area.name] || area.name.en;
+    return getAreaDisplayName(area.name, locale);
   }, [areas, filters.area, locale]);
 
   useEffect(() => {
@@ -139,7 +144,7 @@ export function DeliveryOperationsPanel({
         code: string;
         name: string | { en: string; hi: string; pa: string };
         isActive?: boolean;
-      }> = data.areas || (areas as any);
+      }> = data.areas || areas;
       const activeAreas = areaPayload
         .filter((area) => area.isActive !== false)
         .map((area) => ({ code: area.code, name: area.name }));
@@ -188,17 +193,16 @@ export function DeliveryOperationsPanel({
     setLoadingKey(`${customerCode}:${type}`);
 
     // Optimistic update
-    setLocalEntries((prev) =>
-      prev.map((entry) => {
-        if (entry.customerCode !== customerCode) return entry;
+      setLocalEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.customerCode !== customerCode) return entry;
 
-        if (type === "RESET") {
-          return { ...entry, status: "PENDING" as const, actualQuantity: entry.defaultQuantity, extraQuantity: 0 };
-        }
-
-        const statusToSet = isTogglingOff ? "PENDING" : (type === "EXTRA" ? "DELIVERED" : type);
-        return { ...entry, status: statusToSet as any };
-      })
+          if (type === "RESET") {
+            return { ...entry, status: "PENDING" as const, actualQuantity: entry.defaultQuantity, extraQuantity: 0 };
+          }
+          const statusToSet = type === "EXTRA" ? "DELIVERED" : type;
+          return { ...entry, status: statusToSet as "DELIVERED" | "SKIPPED" | "PAUSED" | "PENDING" };
+        })
     );
 
     try {
@@ -208,7 +212,12 @@ export function DeliveryOperationsPanel({
         });
       } else {
         const currentEntry = localEntries.find(e => e.customerCode === customerCode);
-        const body: any = {
+        const body: {
+          customerCode: string;
+          status: typeof finalType;
+          date: string;
+          actualQuantity: number;
+        } = {
           customerCode,
           status: finalType,
           date: filters.date,
@@ -375,7 +384,7 @@ export function DeliveryOperationsPanel({
             <option value="">All locations</option>
             {areas.map((area) => (
               <option key={area.code} value={area.code}>
-                {typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}
+                {getAreaDisplayName(area.name, locale)}
               </option>
             ))}
           </select>
@@ -539,7 +548,7 @@ export function DeliveryOperationsPanel({
                   {task.deliveryInstruction && (
                     <div className="hidden xl:block max-w-[130px] mr-auto">
                       <p className="text-[10px] font-bold text-[#064e3b] italic leading-tight bg-[#ecfdf5] px-2 py-1.5 rounded-lg truncate">
-                        "{task.deliveryInstruction}"
+                        &ldquo;{task.deliveryInstruction}&rdquo;
                       </p>
                     </div>
                   )}
@@ -623,7 +632,7 @@ export function DeliveryOperationsPanel({
               {task.deliveryInstruction && (
                 <div className="xl:hidden mt-3 pt-3 border-t border-gray-50">
                   <p className="text-[10px] font-bold text-[#064e3b] italic leading-tight bg-[#ecfdf5] px-2 py-1.5 rounded-lg inline-block">
-                    "{task.deliveryInstruction}"
+                    &ldquo;{task.deliveryInstruction}&rdquo;
                   </p>
                 </div>
               )}
@@ -670,7 +679,7 @@ export function DeliveryOperationsPanel({
               className="flex items-center justify-between px-5 py-4 rounded-[16px] bg-white border border-gray-100 hover:bg-gray-50 text-left text-sm font-black text-gray-700 transition-colors group"
               onClick={() => selectLocation(area.code)}
             >
-              <span>{typeof area.name === "string" ? area.name : (area.name[locale as keyof typeof area.name] || area.name.en)}</span>
+              <span>{area.name}</span>
               <MapPin className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
             </button>
           ))}
