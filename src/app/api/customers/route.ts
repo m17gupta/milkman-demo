@@ -9,7 +9,7 @@ import { User } from "@/models/user";
 const customerSchema = z.object({
   name: z.string().trim().min(2),
   phone: z.string().trim().min(8),
-  preferredLanguage: z.enum(["en", "hi"]).optional(),
+  preferredLanguage: z.enum(["en", "hi", "pa"]).optional(),
   addressLine1: z.string().trim().min(3),
   addressLine2: z.string().trim().optional(),
   areaCode: z.string().trim().min(1),
@@ -64,7 +64,6 @@ export async function POST(request: Request) {
       addressLine2: payload.addressLine2 || "",
       areaCode: area.code,
       areaName: area.name,
-      area: area.name,
       landmark: payload.landmark || "",
       notes: payload.notes || "",
       deliveryInstruction: payload.deliveryInstruction || "",

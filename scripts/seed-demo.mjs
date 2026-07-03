@@ -405,10 +405,9 @@ async function seedDemoData() {
         _id: new ObjectId(),
         customerId: profile._id,
         date: toDayStart(day),
-        quantityDelivered: finalQuantity,
-        baseQuantity: customer.quantityLiters,
+        defaultQuantity: customer.quantityLiters,
+        actualQuantity: finalQuantity,
         extraQuantity,
-        finalQuantity,
         pricePerLiter: customer.pricePerLiter,
         status,
         note:

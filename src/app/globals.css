@@ -93,29 +93,22 @@
   /* Cool gray background */
   --dairly-card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 
-  --brand: #064e3b !important;
-  /* Deep Forest */
-  --brand-soft: #f0fdf4 !important;
-  /* Mint Tint */
-  --brand-ink: #042f24 !important;
-  /* Deep Shadow */
+  /* Forest Green Palette (was override with !important — now natural cascade) */
+  --brand: #064e3b;
+  --brand-soft: #f0fdf4;
+  --brand-ink: #042f24;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
 
-  /* OVERRIDE: Surface Colors */
-  --bg: #f1f5f9 !important;
-  /* Cool Slate Gray background */
-  --surface: #ffffff !important;
-  /* Pure White Cards */
-  --border: #e2e8f0 !important;
+  --admin-primary: var(--brand);
+  --admin-primary-soft: var(--brand-soft);
+  --admin-background: var(--bg);
 
-  /* Force Admin legacy aliases to follow new brand */
-  --admin-primary: var(--brand) !important;
-  --admin-primary-soft: var(--brand-soft) !important;
-  --admin-background: var(--bg) !important;
-
-  /* Force body and html to lose the blue radial gradients */
+  /* Ensure body and html use the slate gray background */
   body,
   html {
-    background: var(--bg) !important;
+    background: var(--bg);
   }
 }
 
@@ -169,7 +162,6 @@ button {
   font-family: inherit;
   cursor: pointer;
   border: none;
-  background: none;
 }
 
 input,

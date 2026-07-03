@@ -61,10 +61,9 @@ export async function PATCH(
       const extra = typeof extraQuantity === "number" ? extraQuantity : 0;
 
       delivery.status = "DELIVERED";
-      delivery.quantityDelivered = baseQuantity + extra;
-      delivery.baseQuantity = baseQuantity;
+      delivery.defaultQuantity = baseQuantity;
+      delivery.actualQuantity = extra > 0 ? baseQuantity + extra : baseQuantity;
       delivery.extraQuantity = extra;
-      delivery.finalQuantity = baseQuantity + extra;
       delivery.pricePerLiter = activePlan?.pricePerLiter || 0;
       await delivery.save();
 

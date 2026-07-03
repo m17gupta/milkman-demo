@@ -208,47 +208,101 @@ function mapById<T extends { _id: string }>(items: T[]) {
 async function getVendorMilkSummaryMap() {
   await connectToDatabase();
 
-  const results = await MilkEntry.aggregate<VendorSummaryAggregate>([
-    {
-      $sort: { date: -1, createdAt: -1 },
-    },
-    {
-      $group: {
-        _id: "$vendorCode",
-        entryCount: { $sum: 1 },
-        totalMilkInward: { $sum: "$quantity" },
-        totalAmount: { $sum: "$total" },
-        totalPaid: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "PAID"] }, "$total", 0],
-          },
-        },
-        totalUnpaid: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "UNPAID"] }, "$total", 0],
-          },
-        },
-        unpaidEntries: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "UNPAID"] }, 1, 0],
-          },
-        },
-        averageSupply: { $avg: "$quantity" },
-        lastPurchaseDate: { $first: "$date" },
-        lastQuantity: { $first: "$quantity" },
-        lastRate: { $first: "$rate" },
+  const [milkResults, purchaseResults] = await Promise.all([
+    MilkEntry.aggregate<VendorSummaryAggregate>([
+      {
+        $sort: { date: -1, createdAt: -1 },
       },
-    },
+      {
+        $group: {
+          _id: "$vendorCode",
+          entryCount: { $sum: 1 },
+          totalMilkInward: { $sum: "$quantity" },
+          totalAmount: { $sum: "$total" },
+          totalPaid: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "PAID"] }, "$total", 0],
+            },
+          },
+          totalUnpaid: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "UNPAID"] }, "$total", 0],
+            },
+          },
+          unpaidEntries: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "UNPAID"] }, 1, 0],
+            },
+          },
+          averageSupply: { $avg: "$quantity" },
+          lastPurchaseDate: { $first: "$date" },
+          lastQuantity: { $first: "$quantity" },
+          lastRate: { $first: "$rate" },
+        },
+      },
+    ]),
+    PurchaseEntry.aggregate<VendorSummaryAggregate>([
+      {
+        $sort: { date: -1, createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: "$vendorCode",
+          entryCount: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" },
+          totalPaid: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentStatus", "PAID"] }, "$totalAmount", 0],
+            },
+          },
+          totalUnpaid: {
+            $sum: {
+              $cond: [{ $ne: ["$paymentStatus", "PAID"] }, "$totalAmount", 0],
+            },
+          },
+          unpaidEntries: {
+            $sum: {
+              $cond: [{ $ne: ["$paymentStatus", "PAID"] }, 1, 0],
+            },
+          },
+          lastPurchaseDate: { $first: "$date" },
+          lastQuantity: { $first: "$quantity" },
+          lastRate: { $first: "$rate" },
+        },
+      },
+    ]),
   ]);
 
-  return new Map(results.map((item) => [String(item._id), item]));
+  // Merge purchase data into milk summary map
+  const milkMap = new Map(milkResults.map((item) => [String(item._id), item]));
+
+  for (const purchase of purchaseResults) {
+    const key = String(purchase._id);
+    const existing = milkMap.get(key);
+
+    if (existing) {
+      existing.entryCount += purchase.entryCount;
+      existing.totalAmount += purchase.totalAmount;
+      existing.totalPaid += purchase.totalPaid;
+      existing.totalUnpaid += purchase.totalUnpaid;
+      existing.unpaidEntries += purchase.unpaidEntries;
+      // Keep the most recent date from either source
+      if (purchase.lastPurchaseDate && (!existing.lastPurchaseDate || purchase.lastPurchaseDate > existing.lastPurchaseDate)) {
+        existing.lastPurchaseDate = purchase.lastPurchaseDate;
+      }
+    } else {
+      milkMap.set(key, { ...purchase, totalMilkInward: 0, averageSupply: 0 });
+    }
+  }
+
+  return milkMap;
 }
 
 async function getReferenceDate() {
   await connectToDatabase();
 
   const [latestDelivery, latestPayment, latestPurchase, latestMilkEntry] = await Promise.all([
-    DeliveryException.findOne().sort({ date: -1 }).lean<PlainDeliveryException | null>(),
+    Delivery.findOne().sort({ date: -1 }).lean<PlainDelivery | null>(),
     Payment.findOne().sort({ date: -1 }).lean<PlainPayment | null>(),
     PurchaseEntry.findOne().sort({ date: -1 }).lean<PlainPurchase | null>(),
     MilkEntry.findOne().sort({ date: -1 }).lean<PlainMilkEntry | null>(),
@@ -481,6 +535,7 @@ export async function getCustomerDetailData(identifier: string) {
     return null;
   }
 
+  // getBaseData() uses React cache() so repeated calls are free within the same request
   const base = await getBaseData();
   const entity = buildCustomerEntities(base).find(
     (entry) => entry.profile.customerCode === identifier || String(entry.profile._id) === identifier,
@@ -1159,6 +1214,7 @@ export async function getDeliveryOperationOptions() {
     products: products.filter((product) => product.isActive !== false),
   };
 }
+
 export async function getCustomerByUserId(userId: string) {
   const base = await getBaseData();
   const entity = buildCustomerEntities(base).find(
@@ -1173,9 +1229,6 @@ export async function getCustomerByUserId(userId: string) {
   await connectToDatabase();
   const profile = await CustomerProfile.findOne({ userId }).lean<PlainCustomerProfile | null>();
   if (profile) {
-    // If we found it directly, we should still return the full detail.
-    // getCustomerDetailData will fetch getCustomerListData which might still be stale.
-    // So we'll try to return a minimal valid object if it's really new.
     const detail = await getCustomerDetailData(profile.customerCode);
     if (detail) return detail;
 

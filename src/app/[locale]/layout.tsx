@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { PlatformHeader } from "@/components/layout/platform-header";
 import { locales, type AppLocale } from "@/i18n/routing";
 import { ConditionalHeader } from "@/components/layout/conditional-header";
+import StoreProvider from "@/store/provider";
 
 type LocaleLayoutProps = {
   children: ReactNode;
@@ -25,13 +26,15 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      <div className="app-shell" lang={locale}>
-        <ConditionalHeader>
-          <PlatformHeader locale={locale as AppLocale} />
-        </ConditionalHeader>
-        {children}
-      </div>
-    </NextIntlClientProvider>
+    <StoreProvider>
+      <NextIntlClientProvider messages={messages}>
+        <div className="app-shell" lang={locale}>
+          <ConditionalHeader>
+            <PlatformHeader locale={locale as AppLocale} />
+          </ConditionalHeader>
+          {children}
+        </div>
+      </NextIntlClientProvider>
+    </StoreProvider>
   );
 }

@@ -35,10 +35,6 @@ const customerProfileSchema = new Schema(
       required: true,
       trim: true,
     },
-    area: {
-      type: String,
-      trim: true,
-    },
     landmark: {
       type: String,
       trim: true,

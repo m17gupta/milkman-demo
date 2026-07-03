@@ -20,7 +20,7 @@ type CustomerFormProps = {
   initialValues?: {
     name: string;
     phone: string;
-    preferredLanguage: "en" | "hi";
+    preferredLanguage: "en" | "hi" | "pa";
     addressLine1: string;
     addressLine2: string;
     areaCode: string;
@@ -149,7 +149,7 @@ export function CustomerForm({
               onChange={(event) =>
                 setForm((current) => ({
                   ...current,
-                  preferredLanguage: event.target.value as "en" | "hi",
+                  preferredLanguage: event.target.value as "en" | "hi" | "pa",
                 }))
               }
             >

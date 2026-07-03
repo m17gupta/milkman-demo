@@ -10,7 +10,7 @@ import { User } from "@/models/user";
 const customerSchema = z.object({
   name: z.string().trim().min(2),
   phone: z.string().trim().min(8),
-  preferredLanguage: z.enum(["en", "hi"]).optional(),
+  preferredLanguage: z.enum(["en", "hi", "pa"]).optional(),
   addressLine1: z.string().trim().min(3),
   addressLine2: z.string().trim().optional(),
   areaCode: z.string().trim().min(1),
@@ -96,7 +96,6 @@ export async function PUT(
     profile.addressLine2 = payload.addressLine2 || "";
     profile.areaCode = area.code;
     profile.areaName = area.name;
-    profile.area = area.name;
     profile.landmark = payload.landmark || "";
     profile.notes = payload.notes || "";
     profile.deliveryInstruction = payload.deliveryInstruction || "";

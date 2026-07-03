@@ -10,6 +10,7 @@
     "seed:demo": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.12.0",
     "clsx": "^2.1.1",
     "jose": "^6.2.3",
     "lucide-react": "^1.8.0",
@@ -18,6 +19,7 @@
     "next-intl": "^4.9.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-redux": "^9.3.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

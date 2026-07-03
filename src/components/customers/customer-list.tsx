@@ -75,6 +75,7 @@ export function CustomerList({ customers, areas, locale }: CustomerListProps) {
             <option value="ALL">All Status</option>
             <option value="ACTIVE">Active</option>
             <option value="PAUSED">Paused</option>
+            <option value="INACTIVE">Inactive</option>
           </select>
 
           <Link
