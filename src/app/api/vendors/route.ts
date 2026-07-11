@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     const payload = vendorSchema.parse(await request.json());
     const code = normalizeAreaCode(payload.code || payload.name);
     const area = payload.areaCode ? await Area.findOne({ code: payload.areaCode }).lean() : null;
+    const areaName = area ? (typeof area.name === "string" ? area.name : area.name.en) : "";
 
     const existing = await Vendor.findOne({ code }).lean();
     if (existing) {
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
       phone: payload.phone || "",
       defaultRate: payload.defaultRate ?? 0,
       areaCode: area?.code || payload.areaCode || "",
-      areaName: area?.name || "",
+      areaName,
       notes: payload.notes || "",
       isActive: payload.isActive ?? true,
       sortOrder: await Vendor.countDocuments(),

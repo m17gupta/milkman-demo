@@ -40,13 +40,14 @@ export async function PUT(
     }
 
     const area = payload.areaCode ? await Area.findOne({ code: payload.areaCode }).lean() : null;
+    const areaName = area ? (typeof area.name === "string" ? area.name : area.name.en) : "";
 
     vendor.code = nextCode;
     vendor.name = payload.name;
     vendor.phone = payload.phone || "";
     vendor.defaultRate = payload.defaultRate ?? vendor.defaultRate;
     vendor.areaCode = area?.code || payload.areaCode || "";
-    vendor.areaName = area?.name || "";
+    vendor.areaName = areaName;
     vendor.notes = payload.notes || "";
     vendor.isActive = payload.isActive ?? vendor.isActive;
     await vendor.save();

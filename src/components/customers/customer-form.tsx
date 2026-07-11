@@ -12,6 +12,8 @@ import {
   AdminSelect,
   AdminTextarea,
 } from "@/components/layout/admin-ui";
+import { useAppDispatch } from "@/store/hooks";
+import { createCustomer, updateCustomer } from "@/store/slices/customerSlice/customerThunks";
 
 type CustomerFormProps = {
   locale: string;
@@ -45,6 +47,7 @@ export function CustomerForm({
   onSuccess,
 }: CustomerFormProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const t = useTranslations("admin.customers.form");
 
   const defaults = useMemo(
@@ -84,10 +87,7 @@ export function CustomerForm({
 
     try {
       const { internalNote, ...rest } = form;
-      const payload: {
-        [key: string]: string | number | undefined;
-        notes?: string;
-      } = {
+      const payload: any = {
         ...rest,
         quantityLiters: Number(form.quantityLiters),
         pricePerLiter: Number(form.pricePerLiter),
@@ -96,18 +96,12 @@ export function CustomerForm({
       if (internalNote && internalNote.trim() !== "") {
         payload.notes = internalNote;
       }
-      const response = await fetch(
-        mode === "create" ? "/api/customers" : `/api/customers/${customerCode}`,
-        {
-          method: mode === "create" ? "POST" : "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
-      const data = (await response.json()) as { error?: string; profile?: { customerCode: string } };
 
-      if (!response.ok) {
-        throw new Error(data.error || t("errorSave"));
+      if (mode === "create") {
+        await dispatch(createCustomer(payload)).unwrap();
+      } else {
+        if (!customerCode) throw new Error("Customer code is missing");
+        await dispatch(updateCustomer({ customerCode, data: payload })).unwrap();
       }
 
       if (onSuccess) {

@@ -7,7 +7,14 @@ import { CustomerProfile } from "@/models/customer-profile";
 
 const areaSchema = z.object({
   code: z.string().trim().optional(),
-  name: z.string().trim().min(2, "Area name is required"),
+  name: z.union([
+    z.string().trim().min(2, "Area name is required"),
+    z.object({
+      en: z.string().trim().min(2),
+      hi: z.string().trim().optional(),
+      pa: z.string().trim().optional(),
+    }),
+  ]),
   isActive: z.boolean().optional(),
 });
 
@@ -49,7 +56,8 @@ export async function PUT(
     await connectToDatabase();
     const { areaCode } = await params;
     const payload = areaSchema.parse(await request.json());
-    const nextCode = normalizeAreaCode(payload.code || payload.name);
+    const nameForCode = typeof payload.name === "string" ? payload.name : payload.name.en;
+    const nextCode = normalizeAreaCode(payload.code || nameForCode);
 
     const area = await Area.findOne({ code: areaCode });
 
@@ -65,6 +73,8 @@ export async function PUT(
       }
     }
 
+    const nameForCustomer = typeof payload.name === "string" ? payload.name : payload.name.en;
+
     area.code = nextCode;
     area.name = payload.name;
     area.isActive = payload.isActive ?? area.isActive;
@@ -75,8 +85,8 @@ export async function PUT(
       {
         $set: {
           areaCode: nextCode,
-          areaName: payload.name,
-          area: payload.name,
+          areaName: nameForCustomer,
+          area: nameForCustomer,
         },
       },
     );

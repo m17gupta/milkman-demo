@@ -104,7 +104,7 @@ export function AdminShell({
 
   return (
     <div className="admin-theme">
-      <div className="mx-auto flex min-h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)] max-w-[1440px] gap-4 px-3 pt-2 pb-3 sm:px-4 lg:px-5">
+        <div className="mx-auto flex h-[calc(100vh-64px)] max-w-[1440px] gap-4 px-3 pt-2 pb-3 sm:px-4 lg:px-5">
         <aside className="admin-panel sticky top-[72px] hidden h-[calc(100vh-1.25rem-64px)] w-[296px] shrink-0 rounded-[32px] p-5 lg:flex lg:flex-col overflow-y-auto">
           <div className="flex items-center gap-3 px-1">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--admin-primary-soft)] text-[var(--admin-primary-strong)]">
@@ -130,8 +130,8 @@ export function AdminShell({
         </aside>
 
         {/* MAIN CONTENT AREA */}
-        <div className="flex min-w-0 flex-1 flex-col lg:h-full lg:overflow-hidden">
-          <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col h-full overflow-hidden">
+          <div className="min-w-0 flex-1 flex flex-col h-full overflow-hidden">
             <header className="sticky top-16 z-30 mb-3 sm:top-[72px] sm:mb-3">
               <div className="admin-panel rounded-[30px] px-4 py-3 shadow-lg shadow-blue-900/5 sm:px-5 sm:shadow-none">
                 <div className="flex items-center justify-between gap-3">

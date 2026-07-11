@@ -679,7 +679,7 @@ export function DeliveryOperationsPanel({
               className="flex items-center justify-between px-5 py-4 rounded-[16px] bg-white border border-gray-100 hover:bg-gray-50 text-left text-sm font-black text-gray-700 transition-colors group"
               onClick={() => selectLocation(area.code)}
             >
-              <span>{area.name}</span>
+              <span>{getAreaDisplayName(area.name, locale)}</span>
               <MapPin className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
             </button>
           ))}

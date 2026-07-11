@@ -43,6 +43,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Area not found" }, { status: 404 });
     }
 
+    const areaName = typeof area.name === "string" ? area.name : area.name.en;
+
     const existingUser = await User.findOne({ phone: payload.phone }).lean();
     if (existingUser) {
       return NextResponse.json({ error: "Phone is already linked to another customer" }, { status: 409 });
@@ -63,7 +65,7 @@ export async function POST(request: Request) {
       addressLine1: payload.addressLine1,
       addressLine2: payload.addressLine2 || "",
       areaCode: area.code,
-      areaName: area.name,
+      areaName,
       landmark: payload.landmark || "",
       notes: payload.notes || "",
       deliveryInstruction: payload.deliveryInstruction || "",

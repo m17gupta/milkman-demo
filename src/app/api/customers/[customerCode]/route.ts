@@ -88,6 +88,8 @@ export async function PUT(
       return NextResponse.json({ error: "Area not found" }, { status: 404 });
     }
 
+    const areaName = typeof area.name === "string" ? area.name : area.name.en;
+
     const user = await User.findById(profile.userId);
     if (!user) {
       return NextResponse.json({ error: "Linked user not found" }, { status: 404 });
@@ -111,7 +113,7 @@ export async function PUT(
     profile.addressLine1 = payload.addressLine1;
     profile.addressLine2 = payload.addressLine2 || "";
     profile.areaCode = area.code;
-    profile.areaName = area.name;
+    profile.areaName = areaName;
     profile.landmark = payload.landmark || "";
     profile.notes = payload.notes || "";
     profile.deliveryInstruction = payload.deliveryInstruction || "";

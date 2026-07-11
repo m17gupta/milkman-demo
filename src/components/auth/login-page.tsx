@@ -17,7 +17,7 @@ export function LoginPage({ locale: localeProp = "en" }: LoginPageProps) {
   const searchParams = useSearchParams();
   const locale = searchParams.get("locale") || localeProp || "en";
 
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("9876543210");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

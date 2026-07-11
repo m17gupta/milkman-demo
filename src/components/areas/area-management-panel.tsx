@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { MapPinned, PencilLine, Plus, RefreshCcw, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { MapPinned, PencilLine, Plus, Trash2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import {
   AdminBadge,
@@ -11,13 +11,13 @@ import {
   AdminInput,
   AdminSelect,
 } from "@/components/layout/admin-ui";
+import { GetAllArea } from "./GetAllArea";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { createArea, updateArea, deleteArea } from "@/store/slices/areaSlice/areaThunks";
 
-type AreaRecord = {
-  code: string;
-  name: string | { en: string; hi: string; pa: string };
-  isActive?: boolean;
-  sortOrder?: number;
-};
+import type { AreaRecord as AreaRecordThunk } from "@/store/slices/areaSlice/areaThunks";
+
+type LocalAreaRecord = AreaRecordThunk;
 
 type FormState = {
   code: string;
@@ -34,62 +34,21 @@ const emptyForm: FormState = {
 export function AreaManagementPanel() {
   const t = useTranslations("admin.areas");
   const locale = useLocale() as "en" | "hi" | "pa";
-  const [areas, setAreas] = useState<AreaRecord[]>([]);
+  const dispatch = useAppDispatch();
+  const { listArea, loading, error } = useAppSelector((s) => s.areas);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeAreas = useMemo(
-    () => areas.filter((area) => area.isActive !== false).length,
-    [areas],
+    () => listArea.filter((area) => area.isActive !== false).length,
+    [listArea],
   );
 
-  async function loadAreas(nextSelectedCode?: string | null) {
-    setIsLoading(true);
-    setErrorMessage("");
+  const storeError = error;
 
-    try {
-      const response = await fetch("/api/areas", { cache: "no-store" });
-      const data = (await response.json()) as { areas?: AreaRecord[]; error?: string };
-
-      if (!response.ok) {
-        throw new Error(data.error || t("errorLoad"));
-      }
-
-      const nextAreas = data.areas || [];
-      setAreas(nextAreas);
-
-      const preferredCode = nextSelectedCode ?? selectedCode;
-      const matched = nextAreas.find((area) => area.code === preferredCode) || null;
-
-      if (matched) {
-        setSelectedCode(matched.code);
-        const nameString = typeof matched.name === "string" ? matched.name : matched.name.en;
-        setForm({
-          code: matched.code,
-          name: nameString,
-          isActive: matched.isActive !== false,
-        });
-      } else {
-        setSelectedCode(null);
-        setForm(emptyForm);
-      }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : t("errorLoad"));
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadAreas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function selectArea(area: AreaRecord) {
+  function selectArea(area: LocalAreaRecord) {
     setSelectedCode(area.code);
     const nameString = typeof area.name === "string" ? area.name : area.name.en;
     setForm({
@@ -98,93 +57,76 @@ export function AreaManagementPanel() {
       isActive: area.isActive !== false,
     });
     setStatusMessage("");
-    setErrorMessage("");
   }
 
   function startCreate() {
     setSelectedCode(null);
     setForm(emptyForm);
     setStatusMessage("");
-    setErrorMessage("");
   }
 
   async function saveArea() {
     setIsSubmitting(true);
     setStatusMessage("");
-    setErrorMessage("");
 
     try {
       const isEditing = Boolean(selectedCode);
-      const response = await fetch(
-        isEditing ? `/api/areas/${selectedCode}` : "/api/areas",
-        {
-          method: isEditing ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(form),
-        },
-      );
+      const namePayload = { en: form.name };
 
-      const data = (await response.json()) as {
-        area?: AreaRecord;
-        error?: string;
-      };
-
-      if (!response.ok) {
-        throw new Error(data.error || t("errorSave"));
+      if (isEditing) {
+        await dispatch(updateArea({
+          code: selectedCode!,
+          data: { code: form.code, name: namePayload, isActive: form.isActive },
+        })).unwrap();
+      } else {
+        await dispatch(createArea({
+          code: form.code || undefined,
+          name: namePayload,
+          isActive: form.isActive,
+        })).unwrap();
       }
 
-      const savedCode = data.area?.code || form.code;
       setStatusMessage(isEditing ? t("updatedMessage") : t("createdMessage"));
-      await loadAreas(savedCode);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : t("errorSave"));
+
+      if (!isEditing) {
+        setSelectedCode(null);
+        setForm(emptyForm);
+      }
+    } catch (err) {
+      // error is already in the Redux store via the slice
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function deleteArea() {
-    if (!selectedCode) {
-      return;
-    }
+  async function deleteAreaHandler() {
+    if (!selectedCode) return;
 
-    const shouldDelete = window.confirm(t("confirmDelete"));
-
-    if (!shouldDelete) {
-      return;
-    }
+    if (!window.confirm(t("confirmDelete"))) return;
 
     setIsSubmitting(true);
     setStatusMessage("");
-    setErrorMessage("");
 
     try {
-      const response = await fetch(`/api/areas/${selectedCode}`, {
-        method: "DELETE",
-      });
-      const data = (await response.json()) as { error?: string };
-
-      if (!response.ok) {
-        throw new Error(data.error || t("errorDelete"));
-      }
-
+      await dispatch(deleteArea(selectedCode)).unwrap();
       setStatusMessage(t("deletedMessage"));
-      await loadAreas(null);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : t("errorDelete"));
+      setSelectedCode(null);
+      setForm(emptyForm);
+    } catch {
+      // error is already in the Redux store via the slice
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
+    <>
+    <GetAllArea/>
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
         <AdminCard>
           <p className="text-sm text-[var(--admin-muted)]">{t("totalAreas")}</p>
-          <p className="mt-3 text-3xl font-semibold text-[var(--admin-text)]">{areas.length}</p>
+          <p className="mt-3 text-3xl font-semibold text-[var(--admin-text)]">{listArea.length}</p>
         </AdminCard>
         <AdminCard>
           <p className="text-sm text-[var(--admin-muted)]">{t("activeAreas")}</p>
@@ -206,10 +148,6 @@ export function AreaManagementPanel() {
               <p className="mt-1 text-sm text-[var(--admin-muted)]">{t("listSubtitle")}</p>
             </div>
             <div className="flex gap-2">
-              <AdminButton variant="secondary" onClick={() => loadAreas()}>
-                <RefreshCcw className="h-4 w-4" />
-                {t("refresh")}
-              </AdminButton>
               <AdminButton onClick={startCreate}>
                 <Plus className="h-4 w-4" />
                 {t("newArea")}
@@ -218,19 +156,19 @@ export function AreaManagementPanel() {
           </div>
 
           <div className="mt-5 space-y-3">
-            {isLoading ? (
+            {loading ? (
               <div className="admin-panel-muted rounded-[24px] p-4 text-sm text-[var(--admin-muted)]">
                 {t("loadingAreas")}
               </div>
             ) : null}
 
-            {!isLoading && areas.length === 0 ? (
+            {!loading && listArea.length === 0 ? (
               <div className="admin-panel-muted rounded-[24px] p-4 text-sm text-[var(--admin-muted)]">
                 {t("noAreas")}
               </div>
             ) : null}
 
-            {areas.map((area) => (
+            {listArea.map((area) => (
               <button
                 key={area.code}
                 type="button"
@@ -311,9 +249,9 @@ export function AreaManagementPanel() {
               </div>
             ) : null}
 
-            {errorMessage ? (
+            {storeError ? (
               <div className="rounded-[18px] bg-[var(--admin-danger-soft)] px-4 py-3 text-sm font-medium text-[#d14646]">
-                {errorMessage}
+                {storeError}
               </div>
             ) : null}
 
@@ -332,7 +270,7 @@ export function AreaManagementPanel() {
               <AdminButton
                 variant="outline"
                 className="justify-center"
-                onClick={deleteArea}
+                onClick={deleteAreaHandler}
                 disabled={!selectedCode || isSubmitting}
               >
                 <Trash2 className="h-4 w-4" />
@@ -343,5 +281,6 @@ export function AreaManagementPanel() {
         </AdminCard>
       </div>
     </div>
+    </>
   );
 }

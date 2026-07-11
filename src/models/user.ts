@@ -18,6 +18,10 @@ const userSchema = new Schema(
     passwordHash: {
       type: String,
     },
+    pinHash: {
+      type: String,
+      select: false,
+    },
     name: {
       en: { type: String, trim: true },
       hi: { type: String, trim: true },

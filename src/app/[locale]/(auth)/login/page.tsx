@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Milk, ArrowRight, Smartphone, Loader2 } from "lucide-react";
+import { Milk, ArrowRight, Smartphone, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginUser } from "@/store/slices/auth/authThunks";
 import { clearAuthError } from "@/store/slices/auth/authSlice";
@@ -16,19 +16,23 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((s) => s.auth);
   const [phone, setPhone] = useState("9876543210");
+  const [pin, setPin] = useState("1234");
+  const [showPin, setShowPin] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     dispatch(clearAuthError());
-
-    const result = await dispatch(loginUser(phone)).unwrap();
-      console.log("userlogin", result)
+   debugger
+    const result = await dispatch(loginUser({ phone, pin })).unwrap();
+    console.log("userlogin", result);
     if (result?.user?.role) {
       const role = result.user.role;
-         const target = role === "CUSTOMER" ? "customer/dashboard" : "admin/dashboard";
+      const target = role === "CUSTOMER" ? "customer/dashboard" : "admin/dashboard";
       router.push(`/${locale}/${target}`);
     }
   }
+
+  const isFormValid = phone.length === 10 && pin.length === 4;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--bg)] p-4">
@@ -51,6 +55,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Phone Input */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-[var(--ink-700)]" htmlFor="phone">
               {t("mobile")}
@@ -67,14 +72,50 @@ export default function LoginPage() {
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                 placeholder={t("mobilePlaceholder")}
                 required
+                autoComplete="tel"
                 className="w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] py-4 pl-12 pr-4 text-sm text-[var(--ink-700)] outline-none transition placeholder:text-[var(--ink-300)] focus:border-[var(--brand)] focus:ring-4 focus:ring-[rgba(37,99,235,0.12)]"
               />
             </div>
           </div>
 
+          {/* PIN Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-[var(--ink-700)]" htmlFor="pin">
+              4-digit PIN
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--ink-300)]" />
+              <input
+                id="pin"
+                type={showPin ? "text" : "password"}
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="Enter your 4-digit PIN"
+                required
+                autoComplete="current-password"
+                className="w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] py-4 pl-12 pr-12 text-sm text-[var(--ink-700)] outline-none transition placeholder:text-[var(--ink-300)] focus:border-[var(--brand)] focus:ring-4 focus:ring-[rgba(37,99,235,0.12)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPin(!showPin)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--ink-300)] hover:text-[var(--ink-500)] transition"
+                tabIndex={-1}
+                aria-label={showPin ? "Hide PIN" : "Show PIN"}
+              >
+                {showPin ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            <p className="text-[11px] text-[var(--ink-300)] mt-1">
+              Enter the 4-digit PIN provided by your milkman
+            </p>
+          </div>
+
           <button
             type="submit"
-            disabled={phone.length !== 10 || loading}
+            disabled={!isFormValid || loading}
             className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-[var(--brand)] py-4 text-sm font-semibold text-white transition hover:bg-[var(--brand-ink)] disabled:opacity-50"
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t("submit")}

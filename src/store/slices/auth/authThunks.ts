@@ -9,11 +9,11 @@ export type UserRecord = {
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async (phone: string) => {
+  async ({ phone, pin }: { phone: string; pin: string }) => {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone }),
+      body: JSON.stringify({ phone, pin }),
     });
 
     if (!res.ok) {

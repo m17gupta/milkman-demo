@@ -33,6 +33,7 @@ export const fetchArea = createAsyncThunk(
 export type CreateAreaPayload = {
   code?: string;
   name: string | { en: string; hi?: string; pa?: string };
+  isActive?: boolean;
 };
 
 export const createArea = createAsyncThunk(
@@ -54,7 +55,7 @@ export const createArea = createAsyncThunk(
 
 export type UpdateAreaPayload = {
   code: string;
-  data: { code?: string; name?: string; isActive?: boolean };
+  data: { code?: string; name?: string | { en: string; hi?: string; pa?: string }; isActive?: boolean };
 };
 
 export const updateArea = createAsyncThunk(
